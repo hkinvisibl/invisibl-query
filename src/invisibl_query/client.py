@@ -21,8 +21,6 @@ class QueryClient:
             logger.info("Processing query request...") 
             payload = extract_metadata(query)
 
-            print("....", payload)
-
             headers={
                 "Accept": "application/json",
                 "Content-Type":"application/json",
