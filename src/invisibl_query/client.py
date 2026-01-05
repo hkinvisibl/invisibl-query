@@ -1,17 +1,18 @@
 import requests
 import os
 import logging
-from .utils import extract_metadata, MetadataExtractionError
+from .utils import get_aws_role, extract_metadata, MetadataExtractionError
 
 logger = logging.getLogger(__name__)
 
 class QueryClient:
     def __init__(self):
         # Fetch API URL and AUTH_TOKEN from environment variables
-        self.api_url = os.getenv("COHORT_API")
+        self.cohort_api_base_url = os.getenv("COHORT_API")
         self.auth_token = os.getenv("AUTH_TOKEN")
+        self.project = os.getenv("PROJECT")
         
-        if not self.api_url or not self.auth_token:
+        if not self.cohort_api_base_url or not self.auth_token or not self.project:
             logger.critical("Configuration missing: Check environment variables.")
             raise RuntimeError("Application configuration failed.")
         
@@ -28,7 +29,7 @@ class QueryClient:
 
             logger.info("Executing query...")
             response = requests.post(
-                f"{self.api_url}/query",
+                f"{self.cohort_api_base_url}/projects/{self.project}/cohorts/query",
                 headers=headers,
                 json={"data":payload},
                 timeout=(4, 900)
@@ -75,7 +76,8 @@ class QueryClient:
         
     
     def list_cohorts(self):
-        try:
+        try:           
+            role = get_aws_role()
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -84,7 +86,8 @@ class QueryClient:
 
             logger.info("Fetching cohorts... ")
             response = requests.get(
-                f"{self.api_url}",
+                f"{self.cohort_api_base_url}/projects/{self.project}/cohorts",
+                params={"role":role},
                 headers=headers,
                 timeout=(4, 90)
             )
