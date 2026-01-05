@@ -38,12 +38,12 @@ class QueryClient:
             try:
                 body = response.json()
             except ValueError:
-                logger.error("Invalid JSON response: %s", response.text)
+                logger.debug("Invalid JSON response: %s", response.text)
                 return {"error": "Invalid response from query execution"}
 
             if not response.ok:
                 if response.status_code == 401:
-                    logger.error("Authentication failed for internal API call.")
+                    logger.debug("Authentication failed for internal API call.")
                     return {"error": "User authentication failed."}
 
                 if isinstance(body, dict):
@@ -51,7 +51,7 @@ class QueryClient:
                 if isinstance(status_obj, dict) and not status_obj.get("ok", True):
                     error_msg = status_obj.get("error", {}).get("details", {}).get("err")
                     if error_msg:
-                        logger.error(f"Error: {error_msg}")
+                        logger.debug(f"Error: {error_msg}")
                         return {"error": error_msg}
                     
             return body
@@ -61,12 +61,12 @@ class QueryClient:
             return {"error": "The provided query is invalid or lacks permissions."}
 
         except requests.exceptions.Timeout:
-            logger.error("Downstream service timeout.")
+            logger.debug("Downstream service timeout.")
             return {"error": "The request took too long to process."}
 
         except requests.exceptions.RequestException:
             # Generic log for all network issues (Connection, HTTP Errors, etc)
-            logger.error("Network communication failure.")
+            logger.debug("Network communication failure.")
             return {"error": "Service temporarily unavailable."}
 
         except Exception:
@@ -95,7 +95,7 @@ class QueryClient:
             try:
                 body = response.json()
             except ValueError:
-                logger.error("Invalid JSON response: %s", response.text)
+                logger.debug("Invalid JSON response: %s", response.text)
                 return {"error": "Invalid response from query execution"}
 
             if not response.ok:
@@ -108,17 +108,17 @@ class QueryClient:
                 if isinstance(status_obj, dict) and not status_obj.get("ok", True):
                     error_msg = status_obj.get("error", {}).get("details", {}).get("err")
                     if error_msg:
-                        logger.error(f"Error: {error_msg}")
+                        logger.debug(f"Error: {error_msg}")
                         return {"error": error_msg}
         
         except requests.exceptions.Timeout:
-            logger.error("ListCohorts API request timed out.")
+            logger.debug("ListCohorts API request timed out.")
             return {"error": "The request took too long to process."}
 
         except requests.exceptions.RequestException:
-            logger.error("Network communication failure calling ListCohorts API.")
+            logger.debug("Network communication failure calling ListCohorts API.")
             return {"error": "Service temporarily unavailable."}
 
         except Exception:
-            logger.exception("Unexpected error in list_cohorts method.")
+            logger.exception("Internal system error.")
             return {"error": "An internal error occurred."}
