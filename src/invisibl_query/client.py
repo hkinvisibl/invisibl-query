@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class QueryClient:
     def __init__(self):
         # Fetch API URL and AUTH_TOKEN from environment variables
-        self.cohort_api_base_url = os.getenv("COHORT_API")
+        self.cohort_api_base_url = os.getenv("COHORT_API_BASE_URL")
         self.auth_token = os.getenv("AUTH_TOKEN")
         self.project = os.getenv("PROJECT")
         
@@ -110,6 +110,8 @@ class QueryClient:
                     if error_msg:
                         logger.debug(f"Error: {error_msg}")
                         return {"error": error_msg}
+                    
+            return body
         
         except requests.exceptions.Timeout:
             logger.debug("ListCohorts API request timed out.")
