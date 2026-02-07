@@ -1,9 +1,18 @@
 import requests
 import os
 import logging
+import json
 from .utils import get_aws_role, extract_metadata, MetadataExtractionError
 
 logger = logging.getLogger(__name__)
+
+class Cohort:
+    def __init__(self, client: "QueryClient", name: str):
+        self.client = client
+        self.name = name
+
+    def execute(self, query: str):
+        return self.client._execute_cohort_query(self.name, query)
 
 class QueryClient:
     def __init__(self):
@@ -16,16 +25,21 @@ class QueryClient:
             logger.critical("Configuration missing: Check environment variables.")
             raise RuntimeError("Application configuration failed.")
         
-    def execute(self, query: str):
+    def cohorts(self, cohort_name: str) -> Cohort:
+        return Cohort(self, cohort_name)
+        
+    def _execute_cohort_query(self, cohort_name: str, query: str):
         try:
             # Metadata extraction
             logger.info("Processing query request...") 
             payload = extract_metadata(query)
+            payload["cohort"]=cohort_name
 
             headers={
                 "Accept": "application/json",
                 "Content-Type":"application/json",
-                "Cookie": self.auth_token}
+                "Cookie": self.auth_token
+            }
 
             logger.info("Executing query...")
             response = requests.post(

@@ -52,14 +52,19 @@ def extract_metadata(query: str) -> Dict[str, Any]:
     try:
         parser = Parser(query)
         tables = parser.tables
+        limit = parser.limit_and_offset
     except Exception as e:
         raise MetadataExtractionError("Failed to parse SQL syntax.") from e
 
     if not tables:
         raise MetadataExtractionError("No valid tables identified in request query.")
+    
+    limit_value = limit[0] if limit else None
+
 
     return {
         "query": query,
         "role": role,
-        "tables": tables
+        "tables": tables,
+        "limit": limit_value,
     }
